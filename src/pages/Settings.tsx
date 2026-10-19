@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSettings } from '../context/SettingsContext'
 import { useToast } from '../components/ToastProvider'
 import { FormField, Input } from '../components/forms'
@@ -13,7 +14,6 @@ import { useDebouncedAutoSave } from '../hooks/useDebouncedAutoSave'
 import { AutoSaveIndicator, type AutoSaveIndicatorLabels } from '../components/indicators'
 import { updateSettings } from '../api/settings'
 import { AUTO_SAVE_DEFAULTS } from '../config/autoSave'
-import { DOM_EVENTS } from '../config/domEvents'
 import type { AutoDismissOption } from '../context/SettingsContext'
 import './Settings.css'
 
@@ -77,6 +77,13 @@ export default function Settings() {
     setToastsEnabled,
     autoDismiss,
     setAutoDismiss,
+    quietHoursEnabled,
+    setQuietHoursEnabled,
+    quietHoursStart,
+    setQuietHoursStart,
+    quietHoursEnd,
+    setQuietHoursEnd,
+    saveSettings,
   } = useSettings()
   const { addToast } = useToast()
 
@@ -235,8 +242,8 @@ export default function Settings() {
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault()
     }
-    window.addEventListener(DOM_EVENTS.BEFORE_UNLOAD, handler)
-    return () => window.removeEventListener(DOM_EVENTS.BEFORE_UNLOAD, handler)
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
   }, [isDirty])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -469,7 +476,7 @@ export default function Settings() {
         >
           <Select
             value={network}
-            onChange={setNetwork}
+            onChange={(v) => setNetwork(v as 'public' | 'test')}
             options={[
               { value: 'public', label: 'Public (Mainnet)' },
               { value: 'test', label: 'Test (Testnet)' },
@@ -526,7 +533,7 @@ export default function Settings() {
         >
           <Select
             value={autoDismiss}
-            onChange={setAutoDismiss}
+            onChange={(v) => setAutoDismiss(v as AutoDismissOption)}
             options={[
               { value: 'off', label: 'Off (require manual dismiss)' },
               { value: '3s', label: '3 seconds' },
@@ -678,6 +685,15 @@ export default function Settings() {
           Cancel
         </button>
       </div>
+
+      <ConfirmDialog
+        open={importConfirmOpen}
+        title="Import settings?"
+        description={confirmDescription}
+        confirmLabel="Apply settings"
+        onConfirm={handleImportConfirm}
+        onCancel={handleImportCancel}
+      />
     </div>
   )
 }

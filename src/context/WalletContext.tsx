@@ -7,6 +7,7 @@ import { useIdleTimeout } from '../hooks/useIdleTimeout'
 import { useToast } from '../components/ToastProvider'
 import SessionTimeoutDialog from '../components/SessionTimeoutDialog'
 import { emitWalletSessionEvent, generateCorrelationId } from '../lib/walletAudit'
+import { clearAppLocalStorage } from '../lib/clearAppLocalStorage'
 
 export type WalletContextValue = UseWalletState & {
   connected: boolean
@@ -41,11 +42,15 @@ export function useWallet(): WalletContextValue {
   return useWalletContext()
 }
 
+/** Minutes after the last re-auth before sensitive actions require it again. */
+const REAUTH_THRESHOLD_MINUTES = 15
+
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000
 const WARNING_THRESHOLD_MS = 60 * 1000
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const { network, reauthThresholdMinutes } = useSettings()
+  const { network } = useSettings()
+  const reauthThresholdMinutes = REAUTH_THRESHOLD_MINUTES
   const wallet = useWalletState(network)
   const { addToast } = useToast()
   const navigate = useNavigate()
