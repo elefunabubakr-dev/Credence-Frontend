@@ -10,7 +10,13 @@ const ROUTE_LABELS: Record<string, string> = {
   '/dashboard': 'Dashboard page',
   '/bond': 'Bond page',
   '/trust': 'Trust Score page',
+  '/bond/new': 'Create Bond page',
+  '/trust/summary': 'Trust Summary page',
+  '/attestations': 'Attestations page',
+  '/transactions': 'Transactions page',
   '/settings': 'Settings page',
+  '/signin': 'Sign In page',
+  '/test-amount-input': 'Amount Input Test page',
 }
 
 /**
@@ -24,7 +30,10 @@ export default function RouteAnnouncer() {
 
   useEffect(() => {
     // Fallback gracefully handles catch-all configurations or unmapped routes like 404s
-    const pageLabel = ROUTE_LABELS[pathname] || 'Page Not Found'
+    const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
+    const pageLabel =
+      ROUTE_LABELS[normalized] ||
+      (/^\/bond\/[^/]+$/.test(normalized) ? 'Bond Detail page' : 'Page Not Found')
 
     // Defer text-assignment slightly until just after the DOM paint completes.
     // This allows assistive tech to cleanly process structural navigation changes.
